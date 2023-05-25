@@ -30,9 +30,12 @@ const SortableTree = () => {
     console.log(result);
     const { source, destination } = result;
     const sourceCategoryId = source.droppableId;
+    const destCategoryId = destination.droppableId;
 
     const sourceEle = categories[source.index];
     const destEle = categories[destination.index];
+    const sourceObj = categories.find(ele => ele.id === source.droppableId);
+    const destObj = categories.find(ele => ele.id === destination.droppableId);
     
     if(!sourceEle.isSection && destEle.isSection){
       console.log('parent to child drop', '1');
@@ -54,14 +57,26 @@ const SortableTree = () => {
       const clonedCategory = { ...category, items: clonedCategoryItems };
       const copy = categories.filter(ele => ele.id !== clonedCategory.id);
       setCategories([...copy, clonedCategory]);
+    } else if(sourceObj && sourceObj.isSection && destObj && destObj.isSection){
+      console.log('drop element in section from another section', '3');
+      const category = categories.find(ele => ele.id === sourceCategoryId);
+      const categoryItems = category.items;
+      const clonedCategoryItems = [...categoryItems];
+      const [ele] = clonedCategoryItems.splice(source.index, 1);
+      category.items = [...clonedCategoryItems];
+      const destCategory = categories.find(ele => ele.id === destCategoryId);
+      const clonedDestCategoryItems = [...destCategory.items, ele];
+      destCategory.items = [...clonedDestCategoryItems];
+      const copy = categories.filter(ele => ele.id !== destCategory.id);
+      setCategories([...copy, destCategory]);
     } else if(!sourceEle.isSection && !destEle.isSection){
-      console.log('normal reorder', '3');
+      console.log('normal reorder', '4');
       const clonedCategories = [...categories];
       const [ele] = clonedCategories.splice(source.index, 1);
       clonedCategories.splice(destination.index, 0, ele);
       setCategories([...clonedCategories]);
     } else {
-      console.log('section reorder', '4');
+      console.log('section reorder', '5');
       const clonedCategories = [...categories];
       const [ele] = clonedCategories.splice(source.index, 1);
       clonedCategories.splice(destination.index, 0, ele);
@@ -71,7 +86,7 @@ const SortableTree = () => {
   }
 
   return (
-    <DragAndDrop onDragEnd={handleDragAndDropEnd} onDragStart={(item) => console.log(item)}>
+    <DragAndDrop onDragEnd={handleDragAndDropEnd}>
       <Drop id="dropzone" type="dropzone-common">
         {categories.map((category, categoryIndex) => {
           return (
